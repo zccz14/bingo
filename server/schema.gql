@@ -1,0 +1,102 @@
+scalar Date
+# Bingo Member Type
+type Member {
+    # BSON ID
+    id: ID!
+    name: String!
+    gender: Gender
+    birthday: Date!
+    tel: String
+    number: String!
+    balance: Float!
+    # Is the member a staff of Bingo?
+    isStaff: Boolean!
+    # the list of orders by this member (view)
+    orders: [Order] 
+}
+
+type Product {
+    id: ID!
+    name: String!
+    price: Float!
+    type: String!
+}
+
+type Order {
+    id: ID!
+    date: Date!
+    member: Member
+    details: [OrderDetail!]!
+    total: Float!
+    status: OrderStatus!
+    note: String!
+}
+
+# Order Detail
+type OrderDetail {
+    name: String!
+    price: Float!
+    amount: Int!
+}
+
+enum OrderStatus {
+    # New Order (not paid)
+    NEW
+    # Order Paid (make product now)
+    PAID
+    # Order Finished (delivered products)
+    FINISHED
+    # Order Canceled (order canceled)
+    CANCELED
+}
+
+# Gender
+enum Gender {
+    MALE
+    FEMALE
+    UNKNOWN
+}
+
+# Input Type of Order Detail
+input OrderDetailInput {
+    # name of product
+    name: String!
+    # price of product
+    price: Float!
+    # amount of product
+    amount: Int!
+}
+
+# Support Dynamic Type
+scalar JSON
+
+# Bingo Query
+type Query {
+    # Fetch Members
+    members(condition: JSON, skip: Int = 0, limit: Int = 20, sort: JSON): [Member]
+    # Fetch Orders
+    orders(condition: JSON, skip: Int = 0, limit: Int = 20, sort: JSON): [Order]
+    # Fetch Products
+    products(condition: JSON, skip: Int = 0, limit: Int = 20, sort: JSON): [Product]
+}
+# Bingo Mutation Operations
+type Mutation {
+    # Create A Member
+    createMember(name: String!, gender: Gender, birthday: String, tel: String, number: String!, balance: Float!, isStaff: Boolean = false): Member
+    # Update A Member's Info
+    updateMember(id: ID!, name: String, gender: Gender, birthday: String, tel: String, isStaff: Boolean): Member
+    # Topup A Member's Balance
+    updateMemberBalanceTopup(id: ID!, amount: Float!): Member
+
+    # Create An Order
+    createOrder(memberId: ID, details: [OrderDetailInput!]!, total: Float, note: String): Order
+    # Update Order Status
+    updateOrderStatus(id: ID!, status: OrderStatus!): Order
+
+    # Create A Product
+    createProduct(name: String!, price: Float!, type: String!): Product
+    # Update A Product's Info (no effect to the existing orders)
+    updateProduct(id: ID!, name: String, price: Float, type: String): Product
+    # Delete A Product (no effect to the existing orders)
+    deleteProduct(id: ID!): Product
+}
