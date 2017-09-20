@@ -99,6 +99,8 @@ const resolvers = {
 };
 const schema = graphqlTools.makeExecutableSchema({ typeDefs: schemaString, resolvers })
 
-express().use(graphqlHTTP({ schema: schema, pretty: true, graphiql: true })).listen(3000);
+express().use(require('cors')())
+    .use(graphqlHTTP({ schema: schema, pretty: true, graphiql: true }))
+    .listen(3000)
 
 console.log('Bingo API Server is running on http://localhost:3000');
