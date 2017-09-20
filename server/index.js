@@ -86,6 +86,9 @@ const resolvers = {
     Member: {
         orders: function (member) {
             return Order.find({ memberId: member.id });
+        },
+        birthday: function(member) {
+            return member.birthday instanceof Date ? member.birthday.toLocaleDateString(): null;
         }
     },
     Order: {
