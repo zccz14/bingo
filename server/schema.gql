@@ -83,9 +83,9 @@ type Query {
 # Bingo Mutation Operations
 type Mutation {
     # Create A Member
-    createMember(name: String!, gender: Gender, birthday: String, tel: String, number: String!, balance: Float!, isStaff: Boolean = false): Member
+    createMember(name: String!, abbr: String, gender: Gender, birthday: String, tel: String, number: String!, balance: Float!, isStaff: Boolean = false): Member
     # Update A Member's Info
-    updateMember(id: ID!, name: String, gender: Gender, birthday: String, tel: String, isStaff: Boolean): Member
+    updateMember(id: ID!, name: String, abbr: String, gender: Gender, birthday: String, tel: String, isStaff: Boolean): Member
     # Topup A Member's Balance
     updateMemberBalanceTopup(id: ID!, amount: Float!): Member
 
