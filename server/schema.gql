@@ -4,6 +4,7 @@ type Member {
     # BSON ID
     id: ID!
     name: String!
+    abbr: String
     gender: Gender
     birthday: Date
     tel: String

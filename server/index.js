@@ -24,6 +24,13 @@ const resolvers = {
     }),
     Query: {
         members: function (_, { condition, skip, limit, sort }) {
+            if (condition && condition.name) {
+                condition.$or = [
+                        {name: {$regex: condition.name, $options: 'i'}},
+                        {abbr: {$regex: condition.name, $options: 'i'}}
+                    ]
+                delete condition.name;
+            }
             return Member.find(condition).skip(skip).limit(limit).sort(sort);
         },
         products: function (_, { condition, skip, limit, sort }) {
