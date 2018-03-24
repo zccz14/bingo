@@ -12,6 +12,11 @@ const Member = require('./models/member');
 const Product = require('./models/product');
 const Order = require('./models/order');
 
+const errors = {
+    MemberBalanceNotEnough: 1, // 会员余额不足
+    UnsupportedOrderStatusTransfer: 2, // 不支持的订单状态转移
+}
+
 const fs = require('fs');
 const schemaString = fs.readFileSync('./schema.gql', "UTF-8");
 const resolvers = {
@@ -97,7 +102,7 @@ const resolvers = {
                             yield order.save();
                             return order;
                         } else {
-                            return new Error('user balance not enough');
+                            return new Error(errors.MemberBalanceNotEnough);
                         }
                     } else {
                         // pay by cash / others out of system
@@ -121,7 +126,7 @@ const resolvers = {
                     yield order.save();
                     return order;
                 } else {
-                    return new Error('illegal order status transfer');
+                    return new Error(errors.UnsupportedOrderStatusTransfer);
                 }
             });
         },
