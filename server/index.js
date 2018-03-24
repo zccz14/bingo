@@ -81,7 +81,7 @@ const resolvers = {
             return Member.findByIdAndUpdate(id, { $inc: { balance: amount } }, { new: true });
         },
         updateOrderStatus: function (_, { orderId, memberId }) {
-            return Order.findByIdAndUpdate(id, { memberId }, { new: true });
+            return Order.findByIdAndUpdate(orderId, { memberId }, { new: true });
         },
         updateOrderStatus: function (_, { id, status }) {
             return Order.findByIdAndUpdate(id, { status }, { new: true });
