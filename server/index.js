@@ -59,7 +59,7 @@ const resolvers = {
                     details,
                     total,
                     status,
-                    note
+                    note: note || ""
                 }).save();
             })
         },
