@@ -92,7 +92,7 @@ type Mutation {
     # Create An Order
     createOrder(memberId: ID, details: [OrderDetailInput!]!, total: Float, note: String): Order
     # Update Order's Member
-    updateOrderMember(orderId: ID!, memberId: ID!): Order
+    updateOrderMember(orderId: ID!, memberId: ID): Order
     # Update Order Status
     updateOrderStatus(id: ID!, status: OrderStatus!): Order
 
