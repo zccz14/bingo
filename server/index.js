@@ -26,9 +26,9 @@ const resolvers = {
         members: function (_, { condition, skip, limit, sort }) {
             if (condition && condition.name) {
                 condition.$or = [
-                        {name: {$regex: condition.name, $options: 'i'}},
-                        {abbr: {$regex: condition.name, $options: 'i'}}
-                    ]
+                    { name: { $regex: condition.name, $options: 'i' } },
+                    { abbr: { $regex: condition.name, $options: 'i' } }
+                ]
                 delete condition.name;
             }
             return Member.find(condition).skip(skip).limit(limit).sort(sort);
@@ -84,7 +84,45 @@ const resolvers = {
             return Order.findByIdAndUpdate(orderId, { memberId }, { new: true });
         },
         updateOrderStatus: function (_, { id, status }) {
-            return Order.findByIdAndUpdate(id, { status }, { new: true });
+            return co(function* () {
+                let order = yield Order.findById(id);
+                if (order.status === 'NEW' && status === 'PAID') {
+                    if (order.memberId) {
+                        let member = yield Member.findById(order.memberId);
+                        if (member.balance >= order.total) {
+                            member.balance -= order.total;
+                            yield member.save();
+                            order.status = status;
+                            yield order.save();
+                            return order;
+                        } else {
+                            return new Error('user balance not enough');
+                        }
+                    } else {
+                        // pay by cash / others out of system
+                        order.status = status;
+                        yield order.save();
+                        return order;
+                    }
+                } else if (order.status === 'PAID' && status === 'NEW') {
+                    // back
+                    if (order.memberId) {
+                        let member = yield Member.findById(order.memberId);
+                        member.balance += order.total;
+                        yield member.save();
+                    }
+                    order.status = status;
+                    yield order.save();
+                    return order;
+                } else if (order.status === 'PAID' && status === 'FINISHED' 
+                        || order.status === 'FINISHED' && status === 'PAID') {
+                    order.status = status;
+                    yield order.save();
+                    return order;
+                } else {
+                    return new Error('illegal order status transfer');
+                }
+            });
         },
         updateProduct: function (_, { id, ...doc }) {
             return Product.findByIdAndUpdate(id, doc, { new: true });
@@ -97,8 +135,8 @@ const resolvers = {
         orders: function (member) {
             return Order.find({ memberId: member.id });
         },
-        birthday: function(member) {
-            return member.birthday instanceof Date ? member.birthday.toLocaleDateString(): null;
+        birthday: function (member) {
+            return member.birthday instanceof Date ? member.birthday.toLocaleDateString() : null;
         }
     },
     Order: {
@@ -113,6 +151,9 @@ const resolvers = {
 const schema = graphqlTools.makeExecutableSchema({ typeDefs: schemaString, resolvers })
 
 express().use(require('cors')())
+    .use((req, res, next) => {
+        console.log(req.body); // log
+    })
     .use(graphqlHTTP({ schema: schema, pretty: true, graphiql: true }))
     .listen(3000)
 
