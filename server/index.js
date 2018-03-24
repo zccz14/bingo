@@ -80,6 +80,9 @@ const resolvers = {
         updateMemberBalanceTopup: function (_, { id, amount }) {
             return Member.findByIdAndUpdate(id, { $inc: { balance: amount } }, { new: true });
         },
+        updateOrderStatus: function (_, { orderId, memberId }) {
+            return Order.findByIdAndUpdate(id, { memberId }, { new: true });
+        },
         updateOrderStatus: function (_, { id, status }) {
             return Order.findByIdAndUpdate(id, { status }, { new: true });
         },
