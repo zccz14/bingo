@@ -49,26 +49,13 @@ const resolvers = {
         createMember: function (_, obj) {
             return new Member(obj).save();
         },
-        createOrder: function (_, { memberId, details, total, note }) {
+        createOrder: function (_, { details, total, note }) {
             return co(function* () {
                 if (total === undefined) {
                     total = details.reduce((pre, cur) => pre + cur.price * cur.amount, 0);
                 }
                 let status = "NEW";
-                if (memberId !== undefined) {
-                    let member = yield Member.findById(memberId);
-                    if (member !== null) {
-                        if (member.balance >= total) {
-                            member.balance -= total;
-                            yield member.save();
-                            status = "PAID";
-                        }
-                    } else {
-
-                    }
-                }
                 return new Order({
-                    memberId,
                     details,
                     total,
                     status,
@@ -121,7 +108,8 @@ const resolvers = {
                     yield order.save();
                     return order;
                 } else if (order.status === 'PAID' && status === 'FINISHED' 
-                        || order.status === 'FINISHED' && status === 'PAID') {
+                        || order.status === 'FINISHED' && status === 'PAID'
+                        || order.status === 'NEW' && status === 'CANCELED') {
                     order.status = status;
                     yield order.save();
                     return order;

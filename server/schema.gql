@@ -90,7 +90,7 @@ type Mutation {
     updateMemberBalanceTopup(id: ID!, amount: Float!): Member
 
     # Create An Order
-    createOrder(memberId: ID, details: [OrderDetailInput!]!, total: Float, note: String): Order
+    createOrder(details: [OrderDetailInput!]!, total: Float, note: String): Order
     # Update Order's Member
     updateOrderMember(orderId: ID!, memberId: ID): Order
     # Update Order Status
