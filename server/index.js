@@ -151,9 +151,6 @@ const resolvers = {
 const schema = graphqlTools.makeExecutableSchema({ typeDefs: schemaString, resolvers })
 
 express().use(require('cors')())
-    .use((req, res, next) => {
-        console.log(req.body); // log
-    })
     .use(graphqlHTTP({ schema: schema, pretty: true, graphiql: true }))
     .listen(3000)
 
