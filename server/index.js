@@ -3,6 +3,8 @@ mongoose.Promise = global.Promise;
 mongoose.connect('mongodb://localhost/test', { useMongoClient: true });
 
 const co = require('co');
+const bodyParser = require('body-parser');
+const { IpFilter, IpDeniedError } = require('express-ipfilter');
 const graphql = require('graphql');
 const graphqlHTTP = require('express-graphql');
 const graphqlTools = require('graphql-tools');
@@ -11,6 +13,12 @@ const GraphQLJSON = require('graphql-type-json');
 const Member = require('./models/member');
 const Product = require('./models/product');
 const Order = require('./models/order');
+const log4js = require('log4js');
+log4js.configure({
+    appenders: { bingo: { type: 'file', filename: 'bingo.log' } },
+    categories: { default: { appenders: ['bingo'], level: 'trace' } }
+});
+const logger = log4js.getLogger('bingo');
 
 const errors = {
     MemberBalanceNotEnough: 1, // 会员余额不足
@@ -107,9 +115,9 @@ const resolvers = {
                     order.status = status;
                     yield order.save();
                     return order;
-                } else if (order.status === 'PAID' && status === 'FINISHED' 
-                        || order.status === 'FINISHED' && status === 'PAID'
-                        || order.status === 'NEW' && status === 'CANCELED') {
+                } else if (order.status === 'PAID' && status === 'FINISHED'
+                    || order.status === 'FINISHED' && status === 'PAID'
+                    || order.status === 'NEW' && status === 'CANCELED') {
                     order.status = status;
                     yield order.save();
                     return order;
@@ -144,8 +152,29 @@ const resolvers = {
 };
 const schema = graphqlTools.makeExecutableSchema({ typeDefs: schemaString, resolvers })
 
-express().use(require('cors')())
+express()
+    .use(bodyParser.json())
+    .use((req, res, next) => {
+        const { query, variables, note } = req.body;
+        if (query) {
+            logger.info(req.body);
+        }
+        next();
+    })
+    .use(IpFilter(['127.0.0.1', '::1'], {
+        mode: 'allow', log: false
+    }))
+    .use(function (err, req, res, _next) {
+        if (err instanceof IpDeniedError) {
+            logger.warn(err.name, err.message, req.headers);
+            res.status(403);
+        } else {
+            res.status(err.status || 500);
+        }
+    })
+    .use(require('cors')())
     .use(graphqlHTTP({ schema: schema, pretty: true, graphiql: true }))
+
     .listen(3000)
 
 console.log('Bingo API Server is running on http://localhost:3000');
